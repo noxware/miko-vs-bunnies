@@ -81,10 +81,27 @@ fn move_miko(
     mut query: Query<&mut Transform, With<Miko>>,
 ) {
     for mut transform in &mut query {
+        let mut direction = Vec3::ZERO;
+
         if keyboard_input.pressed(KeyCode::Left) {
-            transform.translation.x -= SPEED * time.delta_seconds();
-        } else if keyboard_input.pressed(KeyCode::Right) {
-            transform.translation.x += SPEED * time.delta_seconds();
+            direction.x -= 1.0;
+        }
+
+        if keyboard_input.pressed(KeyCode::Right) {
+            direction.x += 1.0;
+        }
+
+        if keyboard_input.pressed(KeyCode::Up) {
+            direction.y += 1.0;
+        }
+
+        if keyboard_input.pressed(KeyCode::Down) {
+            direction.y -= 1.0;
+        }
+
+        if direction.length_squared() > 0.0 {
+            direction = direction.normalize();
+            transform.translation += direction * SPEED * time.delta_seconds();
         }
     }
 }
