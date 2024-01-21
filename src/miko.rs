@@ -5,13 +5,14 @@ const IDLE: AnimationRange = AnimationRange::new(0, 0);
 const ATTACK: AnimationRange = AnimationRange::new(1, 1);
 const WALK: AnimationRange = AnimationRange::new(2, 4);
 const ANIMATION_TIMING: f32 = 0.1;
+const SPEED: f32 = 200.0;
 
 pub struct MikoPlugin;
 
 impl Plugin for MikoPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_miko);
-        app.add_systems(Update, animate_miko);
+        app.add_systems(Update, (animate_miko, move_miko));
     }
 }
 
@@ -70,6 +71,20 @@ fn animate_miko(
                 range: IDLE,
                 secs: ANIMATION_TIMING,
             });
+        }
+    }
+}
+
+fn move_miko(
+    time: Res<Time>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut query: Query<&mut Transform, With<Miko>>,
+) {
+    for mut transform in &mut query {
+        if keyboard_input.pressed(KeyCode::Left) {
+            transform.translation.x -= SPEED * time.delta_seconds();
+        } else if keyboard_input.pressed(KeyCode::Right) {
+            transform.translation.x += SPEED * time.delta_seconds();
         }
     }
 }
