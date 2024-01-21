@@ -11,7 +11,7 @@ pub struct MikoPlugin;
 impl Plugin for MikoPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_miko);
-        app.add_systems(Update, move_miko);
+        app.add_systems(Update, animate_miko);
     }
 }
 
@@ -38,7 +38,7 @@ fn spawn_miko(
     ));
 }
 
-fn move_miko(
+fn animate_miko(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &mut TextureAtlasSprite), With<Miko>>,
     mut ev_change_animation: EventWriter<ChangeAnimationEvent>,
