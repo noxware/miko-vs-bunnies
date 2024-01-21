@@ -45,24 +45,20 @@ fn animate_miko(
     mut ev_change_animation: EventWriter<ChangeAnimationEvent>,
 ) {
     for (entity, mut sprite) in &mut query {
-        if keyboard_input.pressed(KeyCode::Left) {
-            sprite.flip_x = true;
-            ev_change_animation.send(ChangeAnimationEvent {
-                entity,
-                range: WALK,
-                secs: ANIMATION_TIMING,
-            });
-        } else if keyboard_input.pressed(KeyCode::Right) {
-            sprite.flip_x = false;
-            ev_change_animation.send(ChangeAnimationEvent {
-                entity,
-                range: WALK,
-                secs: ANIMATION_TIMING,
-            });
-        } else if keyboard_input.pressed(KeyCode::Z) {
+        if keyboard_input.pressed(KeyCode::Z) {
             ev_change_animation.send(ChangeAnimationEvent {
                 entity,
                 range: ATTACK,
+                secs: ANIMATION_TIMING,
+            });
+        } else if keyboard_input.pressed(KeyCode::Left)
+            || keyboard_input.pressed(KeyCode::Right)
+            || keyboard_input.pressed(KeyCode::Up)
+            || keyboard_input.pressed(KeyCode::Down)
+        {
+            ev_change_animation.send(ChangeAnimationEvent {
+                entity,
+                range: WALK,
                 secs: ANIMATION_TIMING,
             });
         } else {
@@ -72,6 +68,12 @@ fn animate_miko(
                 secs: ANIMATION_TIMING,
             });
         }
+
+        if keyboard_input.pressed(KeyCode::Left) {
+            sprite.flip_x = true;
+        } else if keyboard_input.pressed(KeyCode::Right) {
+            sprite.flip_x = false;
+        }
     }
 }
 
@@ -80,6 +82,10 @@ fn move_miko(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, With<Miko>>,
 ) {
+    if keyboard_input.pressed(KeyCode::Z) {
+        return;
+    }
+
     for mut transform in &mut query {
         let mut direction = Vec3::ZERO;
 
