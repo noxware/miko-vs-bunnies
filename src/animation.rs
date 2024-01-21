@@ -4,7 +4,8 @@ pub struct AnimationPlugin;
 
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, animate);
+        app.add_systems(Update, (animate, change_animation))
+            .add_event::<ChangeAnimationEvent>();
     }
 }
 
@@ -55,5 +56,30 @@ impl AnimationBundle {
             range,
             timer: AnimationTimer(Timer::from_seconds(secs, TimerMode::Repeating)),
         }
+    }
+}
+
+#[derive(Event)]
+pub struct ChangeAnimationEvent {
+    pub entity: Entity,
+    pub range: AnimationRange,
+    pub secs: f32,
+}
+
+fn change_animation(
+    mut ev_change_animation: EventReader<ChangeAnimationEvent>,
+    mut query: Query<(&mut AnimationRange, &mut TextureAtlasSprite)>,
+) {
+    for ev in ev_change_animation.read() {
+        let (mut range, mut sprite) = query
+            .get_mut(ev.entity)
+            .expect("Failed to get AnimationRange and TextureAtlasSprite");
+
+        if *range == ev.range {
+            continue;
+        }
+
+        *range = ev.range;
+        sprite.index = ev.range.first;
     }
 }
