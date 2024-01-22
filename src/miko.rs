@@ -5,7 +5,7 @@ const IDLE: AnimationRange = AnimationRange::new(0, 0);
 const ATTACK: AnimationRange = AnimationRange::new(1, 1);
 const WALK: AnimationRange = AnimationRange::new(2, 4);
 const ANIMATION_TIMING: f32 = 0.1;
-const SPEED: f32 = 200.0;
+const SPEED: f32 = 50.0;
 
 pub struct MikoPlugin;
 
@@ -31,7 +31,6 @@ fn spawn_miko(
         SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
             sprite: TextureAtlasSprite::new(WALK.first),
-            transform: Transform::from_scale(Vec3::splat(6.0)),
             ..default()
         },
         AnimationBundle::new(WALK, ANIMATION_TIMING),
