@@ -5,14 +5,22 @@ const IDLE: AnimationRange = AnimationRange::new(0, 0);
 const ATTACK: AnimationRange = AnimationRange::new(1, 1);
 const WALK: AnimationRange = AnimationRange::new(2, 4);
 const ANIMATION_TIMING: f32 = 0.1;
-const SPEED: f32 = 50.0;
+const WALK_SPEED: f32 = 50.0;
+const RUN_SPEED: f32 = 150.0;
+
+// TODO: Move this component out.
+// TODO: Also change animation speed.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Default)]
+pub struct Speed {
+    pub value: f32,
+}
 
 pub struct MikoPlugin;
 
 impl Plugin for MikoPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_miko);
-        app.add_systems(Update, (animate_miko, move_miko));
+        app.add_systems(Update, (animate_miko, move_miko, miko_run));
     }
 }
 
@@ -34,6 +42,7 @@ fn spawn_miko(
             ..default()
         },
         AnimationBundle::new(WALK, ANIMATION_TIMING),
+        Speed::default(),
         Miko,
     ));
 }
@@ -79,13 +88,13 @@ fn animate_miko(
 fn move_miko(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Miko>>,
+    mut query: Query<(&mut Transform, &Speed), With<Miko>>,
 ) {
     if keyboard_input.pressed(KeyCode::Z) {
         return;
     }
 
-    for mut transform in &mut query {
+    for (mut transform, speed) in &mut query {
         let mut direction = Vec3::ZERO;
 
         if keyboard_input.pressed(KeyCode::Left) {
@@ -106,7 +115,17 @@ fn move_miko(
 
         if direction.length_squared() > 0.0 {
             direction = direction.normalize();
-            transform.translation += direction * SPEED * time.delta_seconds();
+            transform.translation += direction * speed.value * time.delta_seconds();
+        }
+    }
+}
+
+fn miko_run(keyboard_input: Res<Input<KeyCode>>, mut query: Query<&mut Speed, With<Miko>>) {
+    for mut speed in &mut query {
+        if keyboard_input.pressed(KeyCode::ShiftLeft) {
+            speed.value = RUN_SPEED;
+        } else {
+            speed.value = WALK_SPEED;
         }
     }
 }
