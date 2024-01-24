@@ -1,11 +1,14 @@
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
 
+use crate::miko::Miko;
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_camera);
+        app.add_systems(Startup, setup_camera)
+            .add_systems(Update, follow_miko);
     }
 }
 
@@ -19,4 +22,13 @@ fn setup_camera(mut commands: Commands) {
         },
         ..default()
     },));
+}
+
+fn follow_miko(
+    mut camera_query: Query<&mut Transform, With<Camera>>,
+    miko_query: Query<&Transform, (With<Miko>, Without<Camera>)>,
+) {
+    let mut camera_transform = camera_query.get_single_mut().unwrap();
+    let miko_transform = miko_query.get_single().unwrap();
+    camera_transform.translation = miko_transform.translation;
 }
