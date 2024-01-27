@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 pub struct AnimationPlugin;
@@ -68,18 +70,22 @@ pub struct ChangeAnimationEvent {
 
 fn change_animation(
     mut ev_change_animation: EventReader<ChangeAnimationEvent>,
-    mut query: Query<(&mut AnimationRange, &mut TextureAtlasSprite)>,
+    mut query: Query<(
+        &mut AnimationRange,
+        &mut AnimationTimer,
+        &mut TextureAtlasSprite,
+    )>,
 ) {
     for ev in ev_change_animation.read() {
-        let (mut range, mut sprite) = query
+        let (mut range, mut timer, mut sprite) = query
             .get_mut(ev.entity)
             .expect("Failed to get AnimationRange and TextureAtlasSprite");
 
-        if *range == ev.range {
-            continue;
+        if *range != ev.range {
+            sprite.index = ev.range.first;
         }
 
         *range = ev.range;
-        sprite.index = ev.range.first;
+        timer.0.set_duration(Duration::from_secs_f32(ev.secs));
     }
 }
