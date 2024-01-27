@@ -1,6 +1,13 @@
 use bevy::prelude::*;
 
-use crate::enemy::Enemy;
+use crate::{
+    animation::{AnimationBundle, AnimationRange, ChangeAnimationEvent},
+    enemy::Enemy,
+};
+
+const IDLE: AnimationRange = AnimationRange::new(0, 0);
+const WALK: AnimationRange = AnimationRange::new(1, 4);
+const ANIMATION_TIMING: f32 = 0.1;
 
 #[derive(Component)]
 pub struct Bunny;
@@ -9,7 +16,8 @@ pub struct BunnyPlugin;
 
 impl Plugin for BunnyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_bunny);
+        app.add_systems(Startup, spawn_bunny)
+            .add_systems(Update, animate_bunny);
     }
 }
 
@@ -27,7 +35,27 @@ fn spawn_bunny(
             sprite: TextureAtlasSprite::new(0),
             ..default()
         },
-        Enemy,
+        AnimationBundle::new(IDLE, ANIMATION_TIMING),
+        Enemy::default(),
         Bunny,
     ));
+}
+
+fn animate_bunny(
+    query: Query<(Entity, &Enemy), With<Bunny>>,
+    mut ev_change_animation: EventWriter<ChangeAnimationEvent>,
+) {
+    for (entity, enemy) in &query {
+        let mut animation = ChangeAnimationEvent {
+            entity,
+            range: IDLE,
+            secs: ANIMATION_TIMING,
+        };
+
+        if enemy.movement_status.is_chasing() {
+            animation.range = WALK;
+        }
+
+        ev_change_animation.send(animation);
+    }
 }
