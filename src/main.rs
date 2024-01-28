@@ -4,6 +4,8 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 mod animation;
 mod bunny;
 mod camera;
+mod cleanup;
+mod common;
 mod enemy;
 mod miko;
 mod world;
@@ -18,6 +20,7 @@ fn main() {
             enemy::EnemyPlugin,
             animation::AnimationPlugin,
             world::WorldPlugin,
+            cleanup::CleanupPlugin,
         ))
         .add_plugins(WorldInspectorPlugin::new())
         .run();

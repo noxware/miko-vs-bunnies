@@ -1,10 +1,13 @@
 use crate::animation::{AnimationBundle, AnimationRange, ChangeAnimationEvent};
+use crate::cleanup::CleanupTimer;
+use crate::common::Direction;
 use bevy::prelude::*;
 
 const IDLE: AnimationRange = AnimationRange::new(0, 0);
 const ATTACK: AnimationRange = AnimationRange::new(1, 1);
 const WALK: AnimationRange = AnimationRange::new(2, 4);
 const MAGIC: AnimationRange = AnimationRange::new(0, 3);
+const MAGIC_SPEED: f32 = 200.0;
 const ANIMATION_TIMING: f32 = 0.1;
 const FAST_ANIMATION_TIMING: f32 = 0.06;
 const WALK_SPEED: f32 = 50.0;
@@ -16,10 +19,7 @@ impl Plugin for MikoPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, load_assets)
             .add_systems(Startup, spawn_miko)
-            .add_systems(
-                Update,
-                (animate_miko, move_miko, trigger_magic, release_magic),
-            );
+            .add_systems(Update, (animate_miko, move_miko, trigger_magic, move_magic));
     }
 }
 
@@ -158,9 +158,12 @@ fn trigger_magic(
     if keyboard_input.just_pressed(KeyCode::Z) {
         let (miko_transform, miko_sprite) = miko_query.single();
         let mut transform = miko_transform.clone();
+        let direction;
         if miko_sprite.flip_x {
+            direction = Direction::Left;
             transform.translation.x -= 32.0;
         } else {
+            direction = Direction::Right;
             transform.translation.x += 32.0;
         }
 
@@ -171,20 +174,19 @@ fn trigger_magic(
                 transform,
                 ..default()
             },
-            AnimationBundle::new(MAGIC, 0.1),
+            direction,
+            CleanupTimer::new(5.),
+            AnimationBundle::new(MAGIC, ANIMATION_TIMING),
             Magic,
         ));
     }
 }
 
-fn release_magic(
-    mut commands: Commands,
-    keyboard_input: Res<Input<KeyCode>>,
-    query: Query<Entity, With<Magic>>,
-) {
-    if keyboard_input.just_released(KeyCode::Z) {
-        for entity in &query {
-            commands.entity(entity).despawn();
+fn move_magic(time: Res<Time>, mut query: Query<(&mut Transform, &Direction), With<Magic>>) {
+    for (mut transform, direction) in &mut query {
+        match direction {
+            Direction::Left => transform.translation.x -= MAGIC_SPEED * time.delta_seconds(),
+            Direction::Right => transform.translation.x += MAGIC_SPEED * time.delta_seconds(),
         }
     }
 }
