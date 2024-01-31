@@ -11,6 +11,7 @@ impl Plugin for StatePlugin {
 #[derive(States, Debug, Clone, Eq, PartialEq, Copy, Hash, Default)]
 pub enum InGameState {
     #[default]
+    Initial,
     Running,
     Paused,
 }

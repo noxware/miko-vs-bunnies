@@ -2,12 +2,20 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
+use crate::state::InGameState;
+
 pub struct AnimationPlugin;
 
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (animate, change_animation))
-            .add_event::<ChangeAnimationEvent>();
+        app.add_systems(
+            Update,
+            (
+                animate.run_if(in_state(InGameState::Running)),
+                change_animation,
+            ),
+        )
+        .add_event::<ChangeAnimationEvent>();
     }
 }
 

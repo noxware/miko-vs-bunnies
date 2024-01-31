@@ -1,7 +1,7 @@
 use crate::animation::{AnimationBundle, AnimationRange, ChangeAnimationEvent};
 use crate::cleanup::CleanupTimer;
 use crate::common::Direction;
-use crate::state::AppState;
+use crate::state::{AppState, InGameState};
 use bevy::prelude::*;
 
 const IDLE: AnimationRange = AnimationRange::new(0, 0);
@@ -20,7 +20,11 @@ impl Plugin for MikoPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, load_assets)
             .add_systems(OnEnter(AppState::InGame), spawn_miko)
-            .add_systems(Update, (animate_miko, move_miko, trigger_magic, move_magic));
+            .add_systems(
+                Update,
+                (animate_miko, move_miko, trigger_magic, move_magic)
+                    .run_if(in_state(InGameState::Running)),
+            );
     }
 }
 

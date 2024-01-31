@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::{
     animation::{AnimationBundle, AnimationRange, ChangeAnimationEvent},
     enemy::Enemy,
+    state::InGameState,
 };
 
 const IDLE: AnimationRange = AnimationRange::new(0, 0);
@@ -19,7 +20,7 @@ use crate::state::AppState;
 impl Plugin for BunnyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::InGame), spawn_bunny)
-            .add_systems(Update, animate_bunny);
+            .add_systems(Update, animate_bunny.run_if(in_state(InGameState::Running)));
     }
 }
 
