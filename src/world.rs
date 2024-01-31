@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
+use crate::state::AppState;
+
 const GRASS_TYPES_COUNT: usize = 4;
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_world);
+        app.add_systems(OnEnter(AppState::InGame), spawn_world);
     }
 }
 

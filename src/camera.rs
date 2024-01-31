@@ -28,7 +28,8 @@ fn follow_miko(
     mut camera_query: Query<&mut Transform, With<Camera>>,
     miko_query: Query<&Transform, (With<Miko>, Without<Camera>)>,
 ) {
-    let mut camera_transform = camera_query.get_single_mut().unwrap();
-    let miko_transform = miko_query.get_single().unwrap();
-    camera_transform.translation = miko_transform.translation;
+    if let Ok(miko_transform) = miko_query.get_single() {
+        let mut camera_transform = camera_query.single_mut();
+        camera_transform.translation = miko_transform.translation;
+    }
 }

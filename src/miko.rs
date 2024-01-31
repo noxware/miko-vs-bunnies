@@ -1,6 +1,7 @@
 use crate::animation::{AnimationBundle, AnimationRange, ChangeAnimationEvent};
 use crate::cleanup::CleanupTimer;
 use crate::common::Direction;
+use crate::state::AppState;
 use bevy::prelude::*;
 
 const IDLE: AnimationRange = AnimationRange::new(0, 0);
@@ -17,8 +18,8 @@ pub struct MikoPlugin;
 
 impl Plugin for MikoPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, load_assets)
-            .add_systems(Startup, spawn_miko)
+        app.add_systems(Startup, load_assets)
+            .add_systems(OnEnter(AppState::InGame), spawn_miko)
             .add_systems(Update, (animate_miko, move_miko, trigger_magic, move_magic));
     }
 }
@@ -156,29 +157,30 @@ fn trigger_magic(
     miko_query: Query<(&Transform, &TextureAtlasSprite), With<Miko>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Z) {
-        let (miko_transform, miko_sprite) = miko_query.single();
-        let mut transform = miko_transform.clone();
-        let direction;
-        if miko_sprite.flip_x {
-            direction = Direction::Left;
-            transform.translation.x -= 32.0;
-        } else {
-            direction = Direction::Right;
-            transform.translation.x += 32.0;
-        }
+        for (miko_transform, miko_sprite) in &miko_query {
+            let mut transform = miko_transform.clone();
+            let direction;
+            if miko_sprite.flip_x {
+                direction = Direction::Left;
+                transform.translation.x -= 32.0;
+            } else {
+                direction = Direction::Right;
+                transform.translation.x += 32.0;
+            }
 
-        commands.spawn((
-            SpriteSheetBundle {
-                texture_atlas: handles.magic_atlas.clone(),
-                sprite: TextureAtlasSprite::new(0),
-                transform,
-                ..default()
-            },
-            direction,
-            CleanupTimer::new(5.),
-            AnimationBundle::new(MAGIC, ANIMATION_TIMING),
-            Magic,
-        ));
+            commands.spawn((
+                SpriteSheetBundle {
+                    texture_atlas: handles.magic_atlas.clone(),
+                    sprite: TextureAtlasSprite::new(0),
+                    transform,
+                    ..default()
+                },
+                direction,
+                CleanupTimer::new(5.),
+                AnimationBundle::new(MAGIC, ANIMATION_TIMING),
+                Magic,
+            ));
+        }
     }
 }
 

@@ -14,9 +14,11 @@ pub struct Bunny;
 
 pub struct BunnyPlugin;
 
+use crate::state::AppState;
+
 impl Plugin for BunnyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_bunny)
+        app.add_systems(OnEnter(AppState::InGame), spawn_bunny)
             .add_systems(Update, animate_bunny);
     }
 }

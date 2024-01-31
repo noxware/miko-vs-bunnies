@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::miko::Miko;
+use crate::state::InGameState;
 
 const SPEED: f32 = 45.0;
 const DETECTION_RADIUS: f32 = 100.0;
@@ -39,7 +40,7 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, goto_player);
+        app.add_systems(Update, goto_player.run_if(in_state(InGameState::Running)));
     }
 }
 
